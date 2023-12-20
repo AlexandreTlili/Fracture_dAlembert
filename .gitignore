@@ -1,0 +1,6 @@
+biblio/*
+calculations/*
+image-analysis/*
+write-ups/*
+**/*.mp4
+videos/*
