@@ -4,3 +4,8 @@ image-analysis/*
 write-ups/*
 **/*.mp4
 videos/*
+
+# For dAlembert_salleLagree
+data/**
+code/fromThomas/**
+code/tests/**
