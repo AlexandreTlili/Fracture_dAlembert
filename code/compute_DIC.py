@@ -5,18 +5,23 @@ import json # To save parameters
 
 
 # Define paths
-folder = "/home/anais/Alexandre/data/CCGM_500um_496nm_50uN_110Pa-h_1p5cm_m_128g"
+folder = "/home/anais/Alexandre/data/Calibration_top_grey"
 pathImages = os.path.join(folder, "snapshots")
 pathFields = os.path.join(folder, "muDIC")
 
 # Define parameters
-frames_to_keep = np.arange(0, 500, 5)
+frames_to_keep = np.arange(0, 700, 5)
 overwrite_output = True
+plot = False
 
 # Advanced parameters
 max_iter = 40                  # default: 40
 interpolation_order = 3        # default: 3
 frequency_reference = 5        # default: 15 (but sometimes a bit to large) or 5
+manual_limits = True
+manual_limits_val = {"Xc1":400, "Xc2":1900, 
+                     "Yc1":500, "Yc2":1700, 
+                     "n_elx":50, "n_ely":40}
 
 
 ############# CODE #############
@@ -35,7 +40,11 @@ image_stack.skip_images(frames_to_skip)
 
 # Mesh the images
 mesher = dic.Mesher()
-mesh = mesher.mesh(image_stack)
+print('Mesher created')
+if manual_limits:
+    mesh = mesher.mesh(image_stack, GUI=False, **manual_limits_val)
+else:
+    mesh = mesher.mesh(image_stack)
 
 
 # Prepare the inputs and run the analysis
@@ -45,6 +54,7 @@ inputs = dic.DICInput(mesh, image_stack, maxit=max_iter, ref_update_frames=ref_f
 # TODO: Understand what happens to the data when noconvergence is ignored
 dic_job = dic.DICAnalysis(inputs)
 results = dic_job.run()
+print("DICAnalysis ended.")
 
 
 # Compute the fields
@@ -94,6 +104,7 @@ with open(path_params, 'w') as f:
     f.write(json.dumps(parameters))
 
 
-# Create visualizer and show it
-viz = dic.Visualizer(fields, images=image_stack)
-viz.show(field="True strain", component=(0,0), frame=len(frames_to_keep)-1)
+if plot:
+    # Create visualizer and show it
+    viz = dic.Visualizer(fields, images=image_stack)
+    viz.show(field="True strain", component=(0,0), frame=len(frames_to_keep)-1)
