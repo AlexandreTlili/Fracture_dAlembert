@@ -9,8 +9,11 @@ videos/*
 data/**
 code/fromThomas/**
 code/tests/**
+<<<<<<< HEAD
 
 # For PC-Alex
 Articles/Granular_fracture.bib.sav
 sujet_stage.pdf
 Rapport\ final.pdf
+=======
+>>>>>>> 0c9eefeee5190d9447b0a104c5212872ddd9111c
