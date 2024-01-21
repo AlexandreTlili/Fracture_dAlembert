@@ -4,5 +4,8 @@ image-analysis/*
 write-ups/*
 **/*.mp4
 videos/*
+
+# For dAlembert_salleLagree
 data/**
-Granular_fracture.bib.sav
+code/fromThomas/**
+code/tests/**
