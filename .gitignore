@@ -4,6 +4,7 @@ image-analysis/*
 write-ups/*
 **/*.mp4
 videos/*
+**.png
 
 # For dAlembert_salleLagree
 data/**
