@@ -35,6 +35,31 @@ def frames_to_H(frame_numbers, dt, Hmax=50e-3, vMax=1e-3, aMax=1e-3):
     H = time_to_H(time, Hmax, vMax, aMax)
     return H
 
+def H_to_time_float(H, Hmax=50e-3, vMax=1e-3, aMax=1e-3):
+    assert (0 <= H) and (H <= Hmax)
+
+    # Compute durations phases
+    dt1 = vMax / aMax                   # Duration pure acceleration
+    dt2 = Hmax / vMax - vMax / aMax     # Duration linear phase
+    dt3 = dt1                           # Duration pure deceleration until Hmax
+
+    half_phase = dt1 + dt2 + dt3
+
+    # Compute height limits phases
+    H1 = 0.5 * vMax**2 / aMax
+    H2 = Hmax - H1
+
+    if H < H1:
+        return np.sqrt(2 * H / aMax)
+    
+    if H < H2:
+        return dt1 + (H - H1) / vMax
+    
+    return half_phase - np.sqrt(2 * (Hmax - H) / aMax)
+
+H_to_time = np.vectorize(H_to_time_float)
+    
+
 def plot_full_phase(Hmax=50e-3, vMax=1e-3, aMax=1e-3, nbPhases=1, nbPoints=100):
     # Compute durations phases
     dt1 = vMax / aMax                   # Duration pure acceleration

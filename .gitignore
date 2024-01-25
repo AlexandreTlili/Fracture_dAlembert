@@ -5,6 +5,7 @@ write-ups/*
 **/*.mp4
 videos/*
 **.png
+**.pyc
 
 # For dAlembert_salleLagree
 data/**
