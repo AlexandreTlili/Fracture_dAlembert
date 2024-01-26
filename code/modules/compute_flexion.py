@@ -204,3 +204,18 @@ def solve_flexion(W, H, a, nbPoints=50, guess_alpha=[np.pi/4, np.pi/8]):
 
     return df, 0., l2, l2+l3
 
+def solve_curvature(W, H, a, guess_alpha=[np.pi/4, np.pi/8]):
+    """ Returns minimal and maximal curvatures in central region
+    """
+    # Equations to solve
+    func_root = (lambda alpha12: func_root_all(alpha12[0], alpha12[1], W, H, a))
+
+    # Compute solution
+    solution = sco.root(func_root, guess_alpha)
+    alpha1, alpha2 = solution.x
+
+    # Compute force and curvature
+    force = force_from_angles(alpha1, alpha2, W, H)
+    kappa_min, kappa_max = curvature_region3(np.array([alpha2, 0.]), alpha1, alpha2, force)
+    
+    return kappa_min, kappa_max
