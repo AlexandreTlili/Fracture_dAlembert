@@ -5,7 +5,7 @@ import json # To save parameters
 
 
 # Define paths
-folder = "/home/anais/Alexandre/data/Calibration_top_grey"
+folder = "data/CCGM_500um_134nm_25uN_55Pa-h_1cm_m_96g"
 pathImages = os.path.join(folder, "snapshots")
 pathFields = os.path.join(folder, "muDIC")
 
