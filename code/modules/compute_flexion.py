@@ -190,19 +190,23 @@ def solve_flexion(W, H, a, nbPoints=50, guess_alpha=[np.pi/4, np.pi/8]):
     # Integrate solution (S, alpha, kappa) and compute (x, y) and visual strain
     S, alpha, kappa = solve_alpha_curv_from_all_param(l2, l3, alpha1, alpha2, force)
     x, y = xy_from_alpha_s(S, alpha)
-    strain_visu = np.log(np.cos(alpha))
+    trueStrain_visu = np.log(np.cos(alpha))
+    greenStrain_visu = 0.5 * (np.cos(alpha)**2 - 1)
 
     # Change (x,y) origin to be at moving cylinder (fixed in referential camera)
     x = x - a
     y = y - H
 
-    # Create DataFrame
-    data = {"S": S, "alpha": alpha, "kappa": kappa, 
-            "x": x, "y": y, "strain_visu": strain_visu}
+    # Create DataFrame and dict
+    dict_data = {"S": S, "alpha": alpha, "kappa": kappa, 
+            "x": x, "y": y, "trueStrain_visu": trueStrain_visu, 
+            "greenStrain_visu": greenStrain_visu}
+    
+    dict_result = {"alpha1": alpha1, "alpha2": alpha2, "force": force,
+                   "l2": l2, "l3": l3, "S1": 0., "S2": l2, "S3": l2+l3}
 
-    df = pd.DataFrame(data)
-
-    return df, 0., l2, l2+l3
+    df = pd.DataFrame(dict_data)
+    return df, dict_result
 
 def solve_curvature(W, H, a, guess_alpha=[np.pi/4, np.pi/8]):
     """ Returns minimal and maximal curvatures in central region
