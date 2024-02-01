@@ -5,12 +5,13 @@ import json # To save parameters
 
 
 # Define paths
-folder = "data/CCGM_500um_134nm_25uN_55Pa-h_1cm_m_96g"
+folder = "data/Experiments/h_1p5cm/tauC_110Pa/2_CCGM_500um_496nm_50uN_110Pa-h_1p5cm_m_137g"
 pathImages = os.path.join(folder, "snapshots")
 pathFields = os.path.join(folder, "muDIC")
 
 # Define parameters
-frames_to_keep = np.arange(0, 700, 5)
+frames_to_keep = np.arange(0, 2100, 5)
+#frames_to_keep = np.arange(520, 530, 5)
 overwrite_output = True
 plot = False
 
@@ -19,9 +20,9 @@ max_iter = 80                  # default: 40 (but 80 often usefull)
 interpolation_order = 3        # default: 3
 frequency_reference = 5        # default: 15 (but sometimes a bit to large) or 5
 manual_limits = True
-manual_limits_val = {"Xc1":400, "Xc2":1900, 
-                     "Yc1":500, "Yc2":1700, 
-                     "n_elx":50, "n_ely":40}
+manual_limits_val = {"Xc1":500, "Xc2":1900, 
+                     "Yc1":600, "Yc2":1650, 
+                     "n_elx":56, "n_ely":42}
 
 
 ############# CODE #############
@@ -59,6 +60,7 @@ print("DICAnalysis ended.")
 
 # Compute the fields
 fields = dic.Fields(results)
+deformation_gradient = fields.F()
 true_strain = fields.true_strain()
 eng_strain = fields.eng_strain()
 green_strain = fields.green_strain()
@@ -68,7 +70,7 @@ coords = fields.coords()
 # Save the fields
 written = []
 overwritten = []
-to_write = {"frames": frames_to_keep, "coords": coords,
+to_write = {"frames": frames_to_keep, "coords": coords, "deformation_gradient": deformation_gradient,
             "true_strain": true_strain, "eng_strain": eng_strain, 
             "green_strain": green_strain}
 
