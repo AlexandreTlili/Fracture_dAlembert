@@ -112,7 +112,7 @@ def curvature_region3(alpha, alpha1, alpha2, force):
     """ Returns the absolute curvature in central region, knowing angles and force"""
     return np.sqrt(2 * force * np.sin(alpha1-alpha2)/np.cos(alpha2) * np.cos(alpha))
     
-def solve_alpha_curv_from_all_param(l2, l3, alpha1, alpha2, force, nbPoints=50):
+def solve_alpha_curv_from_all_param_largeDef(l2, l3, alpha1, alpha2, force, nbPoints=50):
     """ Solves the first integral of mouvement, starting from S=L (middle)
     nbPoints is the number of outputed points on each segment
     Return S, alpha, kappa
@@ -153,6 +153,9 @@ def solve_alpha_curv_from_all_param(l2, l3, alpha1, alpha2, force, nbPoints=50):
 
     return s, alpha, kappa
 
+def solve_alpha_curv_from_all_param_smallDef(l2, l3, alpha1, alpha2, force, nbPoints=50):
+    return 0.
+
 def xy_from_alpha_s(s, alpha):
     """ Integrate the positions, knowing a sample of the map S->alpha(S)
     Uses the rectangle rule (left Riemann sum), and origin at the left most cylinder"""
@@ -188,7 +191,7 @@ def solve_flexion(W, H, a, nbPoints=50, guess_alpha=[np.pi/4, np.pi/8]):
     l2, l3 = l2_l3_force_from_angles_force(alpha1, alpha2, force)
 
     # Integrate solution (S, alpha, kappa) and compute (x, y) and visual strain
-    S, alpha, kappa = solve_alpha_curv_from_all_param(l2, l3, alpha1, alpha2, force)
+    S, alpha, kappa = solve_alpha_curv_from_all_param_largeDef(l2, l3, alpha1, alpha2, force)
     x, y = xy_from_alpha_s(S, alpha)
     trueStrain_visu = np.log(np.cos(alpha))
     greenStrain_visu = 0.5 * (np.cos(alpha)**2 - 1)
