@@ -12,6 +12,7 @@ videos/*
 data/**
 code/fromThomas/**
 code/tests/**
+only_muDIC/**
 
 # For PC-Alex
 Articles/Granular_fracture.bib.sav

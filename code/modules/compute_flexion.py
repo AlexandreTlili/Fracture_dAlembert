@@ -11,6 +11,8 @@ import pandas as pd
 HUGE = 1e16
 SMALL = 1e-16
 
+tol_smallDef = 1e-1
+
 ##############################################
 # Functions for integration of sqrt of trigo #
 ##############################################
@@ -106,13 +108,17 @@ def l2_l3_force_from_angles_force(alpha1, alpha2, force):
 
 def curvature_region2(alpha, alpha1, force):
     """ Returns the absolute curvature between cylinders, knowing angles and force"""
-    return np.sqrt(2 * force * np.sin(alpha1 - alpha))
+    assert force > -1e-15, "The force should be positive"
+    # Argument sqrt should be >0, but sometimes small floatting point errors
+    return np.sqrt(np.abs(2 * force * np.sin(alpha1 - alpha)))
 
 def curvature_region3(alpha, alpha1, alpha2, force):
     """ Returns the absolute curvature in central region, knowing angles and force"""
-    return np.sqrt(2 * force * np.sin(alpha1-alpha2)/np.cos(alpha2) * np.cos(alpha))
+    assert force > -1e-15, "The force should be positive"
+    # Argument sqrt should be >0, but sometimes small floatting point errors
+    return np.sqrt(np.abs(2 * force * np.sin(alpha1-alpha2)/np.cos(alpha2) * np.cos(alpha)))
     
-def solve_alpha_curv_from_all_param_largeDef(l2, l3, alpha1, alpha2, force, nbPoints=50):
+def solve_alpha_curv_from_all_param(l2, l3, alpha1, alpha2, force, nbPoints=50):
     """ Solves the first integral of mouvement, starting from S=L (middle)
     nbPoints is the number of outputed points on each segment
     Return S, alpha, kappa
@@ -153,9 +159,6 @@ def solve_alpha_curv_from_all_param_largeDef(l2, l3, alpha1, alpha2, force, nbPo
 
     return s, alpha, kappa
 
-def solve_alpha_curv_from_all_param_smallDef(l2, l3, alpha1, alpha2, force, nbPoints=50):
-    return 0.
-
 def xy_from_alpha_s(s, alpha):
     """ Integrate the positions, knowing a sample of the map S->alpha(S)
     Uses the rectangle rule (left Riemann sum), and origin at the left most cylinder"""
@@ -171,14 +174,28 @@ def xy_from_alpha_s(s, alpha):
     
     return np.array(x), np.array(y)
 
-def solve_flexion(W, H, a, nbPoints=50, guess_alpha=[np.pi/4, np.pi/8]):
-    """ Solve the full problem from scratch
-    Returns :
-        df: pd.DataFrame containing (S, alpha, kappa, x, y, strain_visu)
-        s1, s2, s3: floats with abscissa of cylinders and middle
+def alpha_force_lengths_smallDef(W, H, a):
+    """ Angles, force and length, linear in H / W
     """
+    # Force (computed by hand with small deformation)
+    force = (3. * H) / (W**2 * (W + 3 * a))
+    
+    # Slopes at x = 0 and x = W
+    slope1 = (3 * H * (W + 2 * a)) / (2 * W * (W + 3 * a))
+    slope2 = slope1 * (1 - W / (W + 2 * a))
+
+    # Angles
+    alpha1 = np.arctan(slope1)
+    alpha2 = np.arctan(slope2)
+    assert alpha1 > alpha2
+
+    # Lengths
+    l2, l3 = W, a
+
+    return alpha1, alpha2, force, l2, l3
 
 
+def alpha_force_lengths_largeDef(W, H, a, guess_alpha):
     # Equations to solve
     func_root = (lambda alpha12: func_root_all(alpha12[0], alpha12[1], W, H, a))
 
@@ -190,8 +207,30 @@ def solve_flexion(W, H, a, nbPoints=50, guess_alpha=[np.pi/4, np.pi/8]):
     force = force_from_angles(alpha1, alpha2, W, H)
     l2, l3 = l2_l3_force_from_angles_force(alpha1, alpha2, force)
 
+    return alpha1, alpha2, force, l2, l3
+
+
+def solve_flexion(W, H, a, nbPoints=50, guess_alpha=[np.pi/4, np.pi/8], use_largeDef=False, use_smallDef=False):
+    """ Solve the full problem from scratch
+    Inputs:
+        use_largeDef (bool): if True, use large def computation even for small ratio H/W
+        use_smallDef (bool): if True, use small def computation even for large ratio H/W
+    Returns :
+        df: pd.DataFrame containing (S, alpha, kappa, x, y, strain_visu)
+        s1, s2, s3: floats with abscissa of cylinders and middle
+    """
+
+    small_deformation = (H / W < tol_smallDef)
+    compute_smallDef = use_smallDef or (small_deformation and (not use_largeDef))
+    
+    if compute_smallDef:
+        alpha1, alpha2, force, l2, l3 = alpha_force_lengths_smallDef(W, H, a)
+
+    else:
+        alpha1, alpha2, force, l2, l3 = alpha_force_lengths_largeDef(W, H, a, guess_alpha)
+
     # Integrate solution (S, alpha, kappa) and compute (x, y) and visual strain
-    S, alpha, kappa = solve_alpha_curv_from_all_param_largeDef(l2, l3, alpha1, alpha2, force)
+    S, alpha, kappa = solve_alpha_curv_from_all_param(l2, l3, alpha1, alpha2, force)
     x, y = xy_from_alpha_s(S, alpha)
     trueStrain_visu = np.log(np.cos(alpha))
     greenStrain_visu = 0.5 * (np.cos(alpha)**2 - 1)
@@ -211,9 +250,20 @@ def solve_flexion(W, H, a, nbPoints=50, guess_alpha=[np.pi/4, np.pi/8]):
     df = pd.DataFrame(dict_data)
     return df, dict_result
 
-def solve_curvature(W, H, a, guess_alpha=[np.pi/4, np.pi/8]):
+def solve_curvature(W, H, a, guess_alpha=[np.pi/4, np.pi/8], use_largeDef=False, use_smallDef=False):
     """ Returns minimal and maximal curvatures in central region
     """
+
+    small_deformation = (H / W < tol_smallDef)
+    compute_smallDef = use_smallDef or (small_deformation and (not use_largeDef))
+
+    if compute_smallDef:
+        # By hand
+        kappa = 3. * H / (W * (W + 3 * a))
+        return kappa, kappa
+    
+    # Otherwise, large deformation
+
     # Equations to solve
     func_root = (lambda alpha12: func_root_all(alpha12[0], alpha12[1], W, H, a))
 
