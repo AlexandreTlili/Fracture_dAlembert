@@ -17,3 +17,5 @@ code/tests/**
 Articles/Granular_fracture.bib.sav
 sujet_stage.pdf
 Rapport\ final.pdf
+data/**
+code/test_muDICAnalysis

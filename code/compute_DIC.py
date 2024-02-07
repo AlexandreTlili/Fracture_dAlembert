@@ -3,26 +3,32 @@ import numpy as np
 import muDIC as dic
 import json # To save parameters
 
+import modules.calibration_origin as calib
+
 
 # Define paths
-folder = "data/Experiments/h_1p5cm/tauC_110Pa/2_CCGM_500um_496nm_50uN_110Pa-h_1p5cm_m_137g"
+folder = "data\CCGM_500um_496nm_50uN_110Pa_h1cm_m94g_dz50mm_v1mms"
 pathImages = os.path.join(folder, "snapshots")
 pathFields = os.path.join(folder, "muDIC")
 
 # Define parameters
-frames_to_keep = np.arange(0, 2100, 5)
+frames_to_keep = np.arange(0, 2000, 5)
 #frames_to_keep = np.arange(520, 530, 5)
-overwrite_output = True
+overwrite_output = False
 plot = False
 
 # Advanced parameters
 max_iter = 80                  # default: 40 (but 80 often usefull)
 interpolation_order = 3        # default: 3
 frequency_reference = 5        # default: 15 (but sometimes a bit to large) or 5
-manual_limits = True
-manual_limits_val = {"Xc1":500, "Xc2":1900, 
+automatic_limits = False
+automatic_origin = False
+
+automatic_limits_val = {"Xc1":500, "Xc2":1900, 
                      "Yc1":600, "Yc2":1650, 
                      "n_elx":56, "n_ely":42}
+automatic_origin_val = {"X0": 1023, 
+                        "scale_pix_to_m": 7.6678e-5}
 
 
 ############# CODE #############
@@ -33,17 +39,23 @@ nbImages = len(image_stack)
 
 
 # Only keep desired frames
+frames_to_keep = frames_to_keep[frames_to_keep < nbImages]
 toDrop_bool = np.full(nbImages, True)
 toDrop_bool[frames_to_keep] = False
 frames_to_skip = np.arange(nbImages)[toDrop_bool].tolist()
 image_stack.skip_images(frames_to_skip)
 
+# Set the origin and the scale factor
+if automatic_origin:
+    xOrigin, scale_pix_to_m = automatic_origin['X0'], automatic_origin['scale_pix_to_m']
+else:
+    xOrigin, scale_pix_to_m = calib.find_origin_and_scale(image_stack[0])
 
 # Mesh the images
 mesher = dic.Mesher()
 print('Mesher created')
-if manual_limits:
-    mesh = mesher.mesh(image_stack, GUI=False, **manual_limits_val)
+if automatic_limits:
+    mesh = mesher.mesh(image_stack, GUI=False, **automatic_limits_val)
 else:
     mesh = mesher.mesh(image_stack)
 
@@ -100,7 +112,8 @@ parameters = {"max_iter": max_iter, "interpolation_order": interpolation_order,
               "frequency_reference": frequency_reference, "ref_frames": ref_frames, 
               "min_x": mesh.Xc1, "max_x": mesh.Xc2, "min_y": mesh.Yc1, "max_y": mesh.Yc2,
               "nel_x": mesh.n_elx, "nel_y": mesh.n_ely, 
-              "saved": written, "existing": overwritten, "overwritten": overwrite_output}
+              "saved": written, "existing": overwritten, "overwritten": overwrite_output, 
+              "xOrigin": xOrigin, "scale_pix_to_m": scale_pix_to_m}
 path_params = os.path.join(pathFields, 'params.txt')
 with open(path_params, 'w') as f:
     f.write(json.dumps(parameters))
