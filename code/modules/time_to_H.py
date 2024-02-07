@@ -1,6 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def compute_time_rising(Hmax=50e-3, vMax=1e-3, aMax=1e-3):
+    """ Compute the duration of the rinsing phase
+    """
+    # Compute durations phases
+    dt1 = vMax / aMax                   # Duration pure acceleration
+    dt2 = Hmax / vMax - vMax / aMax     # Duration linear phase
+    dt3 = dt1                           # Duration pure deceleration until Hmax
+
+    return dt1 + dt2 + dt3
+
 def time_to_H_float(time, Hmax=50e-3, vMax=1e-3, aMax=1e-3):
     """ Compute the height H associated with a given time, 
         knowing vMax and aMax."""
