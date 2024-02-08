@@ -7,26 +7,26 @@ import modules.calibration_origin as calib
 
 
 # Define paths
-folder = "data\CCGM_500um_496nm_50uN_110Pa_h1cm_m94g_dz50mm_v1mms"
-pathImages = os.path.join(folder, "snapshots")
+folder = "data/Experiments/h_1p5cm/tauC_100Pa/1_CCGM_500um_375nm_45uN_100Pa_h_1p5cm_m_137g"
+pathImages = os.path.join(folder, "snapshots_preProcessed")
 pathFields = os.path.join(folder, "muDIC")
 
 # Define parameters
-frames_to_keep = np.arange(0, 2000, 5)
-#frames_to_keep = np.arange(520, 530, 5)
-overwrite_output = False
+frames_to_keep = np.arange(0, 900, 5)
+#frames_to_keep = np.arange(490, 500, 5)
+overwrite_output = True
 plot = False
 
 # Advanced parameters
 max_iter = 80                  # default: 40 (but 80 often usefull)
 interpolation_order = 3        # default: 3
 frequency_reference = 5        # default: 15 (but sometimes a bit to large) or 5
-automatic_limits = False
+automatic_limits = True
 automatic_origin = False
 
-automatic_limits_val = {"Xc1":500, "Xc2":1900, 
-                     "Yc1":600, "Yc2":1650, 
-                     "n_elx":56, "n_ely":42}
+automatic_limits_val = {"Xc1":100, "Xc2":1000, 
+                        "Yc1":100, "Yc2":1000, 
+                        "n_elx":30, "n_ely":30}
 automatic_origin_val = {"X0": 1023, 
                         "scale_pix_to_m": 7.6678e-5}
 
@@ -47,7 +47,7 @@ image_stack.skip_images(frames_to_skip)
 
 # Set the origin and the scale factor
 if automatic_origin:
-    xOrigin, scale_pix_to_m = automatic_origin['X0'], automatic_origin['scale_pix_to_m']
+    xOrigin, scale_pix_to_m = automatic_origin_val['X0'], automatic_origin_val['scale_pix_to_m']
 else:
     xOrigin, scale_pix_to_m = calib.find_origin_and_scale(image_stack[0])
 
