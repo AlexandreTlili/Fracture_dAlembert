@@ -177,6 +177,10 @@ def xy_from_alpha_s(s, alpha):
 def alpha_force_lengths_smallDef(W, H, a):
     """ Angles, force and length, linear in H / W
     """
+
+    if H <= 0.:
+        return 0., 0., 0., W, a
+
     # Force (computed by hand with small deformation)
     force = (3. * H) / (W**2 * (W + 3 * a))
     
@@ -196,6 +200,10 @@ def alpha_force_lengths_smallDef(W, H, a):
 
 
 def alpha_force_lengths_largeDef(W, H, a, guess_alpha):
+
+    if H <0.:
+        return 0., 0., 0., W, a
+
     # Equations to solve
     func_root = (lambda alpha12: func_root_all(alpha12[0], alpha12[1], W, H, a))
 
