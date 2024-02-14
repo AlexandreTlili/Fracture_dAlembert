@@ -11,7 +11,7 @@ def compute_time_rising(Hmax=50e-3, vMax=1e-3, aMax=1e-3):
 
     return dt1 + dt2 + dt3
 
-def time_to_H_float(time, Hmax=50e-3, vMax=1e-3, aMax=1e-3):
+def time_to_H_float(time, Hmax=50e-3, vMax=1e-3, aMax=1e-3, offset_H = 0.):
     """ Compute the height H associated with a given time, 
         knowing vMax and aMax."""
 
@@ -26,27 +26,29 @@ def time_to_H_float(time, Hmax=50e-3, vMax=1e-3, aMax=1e-3):
     time = time % full_phase
 
     if time < dt1:
-        return 0.5 * aMax * time**2
+        return 0.5 * aMax * time**2 - offset_H
     
     if time < dt1 + dt2:
-        return 0.5 * aMax * dt1**2 + (time - dt1) * vMax
+        return 0.5 * aMax * dt1**2 + (time - dt1) * vMax - offset_H
     
     half_phase = dt1 + dt2 + dt3
 
     if time < dt1 + dt2 + dt3:
-        return Hmax - 0.5 * aMax * (half_phase- time)**2
+        return Hmax - 0.5 * aMax * (half_phase - time)**2 - offset_H
     
-    return Hmax - time_to_H_float(time - half_phase, Hmax, vMax, aMax)
+    return Hmax - time_to_H_float(time - half_phase, Hmax, vMax, aMax, offset_H=0.) - offset_H
 
 time_to_H = np.vectorize(time_to_H_float)
 
-def frames_to_H(frame_numbers, dt, Hmax=50e-3, vMax=1e-3, aMax=1e-3):
+def frames_to_H(frame_numbers, dt, Hmax=50e-3, vMax=1e-3, aMax=1e-3, offset_H=0.):
     time = dt * np.array(frame_numbers)
-    H = time_to_H(time, Hmax, vMax, aMax)
+    H = time_to_H(time, Hmax, vMax, aMax, offset_H)
     return H
 
-def H_to_time_float(H, Hmax=50e-3, vMax=1e-3, aMax=1e-3):
-    assert (0 <= H) and (H <= Hmax)
+def H_to_time_float(H, Hmax=50e-3, vMax=1e-3, aMax=1e-3, offset_H=0.):
+
+    H = H + offset_H
+    assert (0. <= H) and (H <= Hmax)
 
     # Compute durations phases
     dt1 = vMax / aMax                   # Duration pure acceleration
