@@ -11,7 +11,7 @@ import pandas as pd
 HUGE = 1e16
 SMALL = 1e-16
 
-tol_smallDef = 1e-1
+tol_smallDef = 5e-2
 
 ##############################################
 # Functions for integration of sqrt of trigo #
@@ -250,7 +250,7 @@ def solve_flexion(W, H, a, nbPoints=50, guess_alpha=[np.pi/4, np.pi/8], use_larg
     df = pd.DataFrame(dict_data)
     return df, dict_result
 
-def solve_curvature(W, H, a, guess_alpha=[np.pi/4, np.pi/8], use_largeDef=False, use_smallDef=False):
+def solve_curvature(W, H, a, guess_alpha=None, use_largeDef=False, use_smallDef=False):
     """ Returns minimal and maximal curvatures in central region
     """
 
@@ -263,6 +263,10 @@ def solve_curvature(W, H, a, guess_alpha=[np.pi/4, np.pi/8], use_largeDef=False,
         return kappa, kappa
     
     # Otherwise, large deformation
+
+    if guess_alpha is None:
+        # Get angles from small deformation theory
+        guess_alpha = list(alpha_force_lengths_smallDef(W, H, a)[:2])
 
     # Equations to solve
     func_root = (lambda alpha12: func_root_all(alpha12[0], alpha12[1], W, H, a))
