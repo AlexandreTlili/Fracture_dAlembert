@@ -33,6 +33,10 @@ automatic_origin_val = {"X0": 1023,
 
 ############# CODE #############
 
+# Check that folder exists
+assert os.path.isdir(folder), os.path.abspath(folder)
+assert os.path.isdir(pathImages), os.path.abspath(pathImages)
+
 # Import images
 image_stack = dic.image_stack_from_folder(pathImages, file_type='.tiff')
 nbImages = len(image_stack)
