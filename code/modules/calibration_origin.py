@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-import PIL.Image as Image
-
 def find_origin_and_scale(image):
 
     # Plot image
